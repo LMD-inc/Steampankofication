@@ -8,7 +8,7 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"leather-black": "block/leather-black"
+		"leather-black": "block/leather/black"
 	},
 	"elements": [
 		{

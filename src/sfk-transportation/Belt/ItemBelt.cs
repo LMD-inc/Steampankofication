@@ -24,11 +24,11 @@ namespace SFK.Transportation.Belt
     public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
     {
       handling = EnumHandHandling.PreventDefault;
-      Block targetBlock = api.World.BlockAccessor.GetBlock(blockSel?.Position);
+      BlockPos selPos = blockSel?.Position;
 
       IServerPlayer srvpl = api.World.PlayerByUid((byEntity as EntityPlayer)?.PlayerUID) as IServerPlayer;
 
-      if(srvpl == null) return;
+      if (srvpl == null) return;
 
       // Detach
       if (!byEntity.Controls.Sneak)
@@ -37,17 +37,17 @@ namespace SFK.Transportation.Belt
         return;
       }
 
-      if (!(targetBlock is BlockAxle)) 
+      if (selPos == null || !(api.World.BlockAccessor.GetBlock(selPos) is BlockAxle))
       {
         srvpl.SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("Belts can be placed only on axles"), EnumChatType.Notification);
         return;
       }
 
+
       BlockPos startPos = GetStartPoint(slot);
-      BlockPos selPos = blockSel.Position;
-      if (startPos != null) 
+      if (startPos != null)
       {
-        if (!startPos.Equals(selPos)) 
+        if (!startPos.Equals(selPos))
         {
           TryPlaceBelts(slot, startPos, selPos, srvpl);
           return;
@@ -67,14 +67,15 @@ namespace SFK.Transportation.Belt
     }
 
     #region Binding Points
-    private void BindStartPoint(ItemSlot slot, BlockPos pos) {
+    private void BindStartPoint(ItemSlot slot, BlockPos pos)
+    {
       AssetLocation boundLoc = CodeWithVariant("binding", pos != null ? "bound" : "unbound");
       Item BoundVariant = api.World.GetItem(boundLoc);
 
       int q = slot.Itemstack.StackSize;
       slot.Itemstack = new ItemStack(BoundVariant, q);
-      
-      if(pos != null)
+
+      if (pos != null)
       {
         slot.Itemstack?.Attributes?.SetBlockPos(EnumPinPart.Start.ToString(), pos);
       }
@@ -86,23 +87,27 @@ namespace SFK.Transportation.Belt
       slot.MarkDirty();
     }
 
-    private BlockPos GetStartPoint(ItemSlot slot) {
+    private BlockPos GetStartPoint(ItemSlot slot)
+    {
       return slot.Itemstack?.Attributes?.GetBlockPos(EnumPinPart.Start.ToString());
     }
 
-    private bool IsValidPositions(BlockPos start, BlockPos end) {
+    private bool IsValidPositions(BlockPos start, BlockPos end)
+    {
       // must be on same height
-      if(start.Y != end.Y) return false;
+      if (start.Y != end.Y) return false;
 
       string startAxleDir = api.World.BlockAccessor.GetBlock(start).LastCodePart();
       string endAxleDir = api.World.BlockAccessor.GetBlock(start).LastCodePart();
       // belt gotta go in ns direction
-      if (start.X == end.X) {
+      if (start.X == end.X)
+      {
         if (startAxleDir == "we" && endAxleDir == "we") return true;
         return false;
       }
       // belt gotta go in we direction
-      if (start.Z == end.Z) {
+      if (start.Z == end.Z)
+      {
         if (startAxleDir == "ns" && endAxleDir == "ns") return true;
         return false;
       }
@@ -111,10 +116,13 @@ namespace SFK.Transportation.Belt
       return false;
     }
 
-    private string GetBeltOrientation(BlockPos start, BlockPos end, BlockPos current) {
+    private string GetBeltOrientation(BlockPos start, BlockPos end, BlockPos current)
+    {
       // gotta go ns direction
-      if (start.X == end.X) {
-        if (current.Equals(start) || current.Equals(end)) {
+      if (start.X == end.X)
+      {
+        if (current.Equals(start) || current.Equals(end))
+        {
           if (current.Z < start.Z || current.Z < end.Z) return "s";
           return "n";
         }
@@ -122,8 +130,10 @@ namespace SFK.Transportation.Belt
       }
 
       // gotta go ew direction
-      if (start.Z == end.Z) {
-        if (current.Equals(start) || current.Equals(end)) {
+      if (start.Z == end.Z)
+      {
+        if (current.Equals(start) || current.Equals(end))
+        {
           if (current.X < start.X || current.X < end.X) return "e";
           return "w";
         }
@@ -133,7 +143,8 @@ namespace SFK.Transportation.Belt
     }
     #endregion
 
-    private bool TryPlaceBelts(ItemSlot slot, BlockPos start, BlockPos end, IServerPlayer byPlayer) {
+    private bool TryPlaceBelts(ItemSlot slot, BlockPos start, BlockPos end, IServerPlayer byPlayer)
+    {
       bool allBlocksValid = true;
 
       if (!IsValidPositions(start, end)) return false;
@@ -145,10 +156,11 @@ namespace SFK.Transportation.Belt
         return false;
       }
 
-      api.World.BulkBlockAccessor.SearchBlocks(start, end, (block, pos) => {
+      api.World.BulkBlockAccessor.SearchBlocks(start, end, (block, pos) =>
+      {
         // can place belts only of between start and end axle air or another Horizontal axles
         if (block.Id == 0 || block is BlockAxle) return true;
-        
+
         return allBlocksValid = false;
       });
 
@@ -158,11 +170,14 @@ namespace SFK.Transportation.Belt
         return false;
       }
 
-      api.World.BlockAccessor.WalkBlocks(start, end, (block, pos) => {
+      api.World.BlockAccessor.WalkBlocks(start, end, (block, x, y, z) =>
+      {
+        BlockPos pos = new(x, y, z);
         string orient = GetBeltOrientation(start, end, pos);
         string blockCode = "belt-normal";
         // replace with axled belt
-        if (block is BlockAxle) {
+        if (block is BlockAxle)
+        {
           blockCode = "belt-withaxle";
         }
 

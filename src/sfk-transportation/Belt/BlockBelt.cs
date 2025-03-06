@@ -30,9 +30,9 @@ namespace SFK.Transportation.Belt
       foreach (BlockFacing face in BlockFacing.HORIZONTALS)
       {
         BlockPos npos = blockPos.AddCopy(face);
-        world.BlockAccessor.GetBlock(npos).OnNeighbourBlockChange(world, blockPos, blockPos);
+        world.BlockAccessor.GetBlock(npos).OnNeighbourBlockChange(world, npos, blockPos);
       }
-     
+
       base.OnBlockPlaced(world, blockPos, byItemStack);
     }
 

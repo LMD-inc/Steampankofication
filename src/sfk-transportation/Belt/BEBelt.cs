@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices.WindowsRuntime;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -40,7 +39,7 @@ namespace SFK.Transportation.Belt
 
     protected virtual MeshData GetBeltMesh()
     {
-      if(Block == null) return null;
+      if (Block == null) return null;
       string orientation = Block.Variant["orient"];
 
       return ObjectCacheUtil.GetOrCreate(Api, $"belt-{orientation}-base", () =>
@@ -55,14 +54,14 @@ namespace SFK.Transportation.Belt
     }
     public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tesselator)
     {
-        MeshData beltMesh = GetBeltMesh();
+      MeshData beltMesh = GetBeltMesh();
 
-        ITexPositionSource texPos = tesselator.GetTexSource(Block);
-        // mesh.SetTexPos(new TextureAtlasPosition())
+      ITexPositionSource texPos = tesselator.GetTextureSource(Block);
+      // mesh.SetTexPos(new TextureAtlasPosition())
 
-        mesher.AddMeshData(beltMesh);
+      mesher.AddMeshData(beltMesh);
 
-        return base.OnTesselation(mesher, tesselator);
+      return base.OnTesselation(mesher, tesselator);
     }
   }
 }

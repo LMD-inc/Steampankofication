@@ -9,7 +9,7 @@
 	},
 	"textures": {
 		"wood": "block/wood/planks/generic",
-		"leather-black": "block/leather-black"
+		"leather-black": "block/leather/black"
 	},
 	"elements": [
 		{
